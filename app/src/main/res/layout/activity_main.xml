@@ -17,13 +17,19 @@
         app:popupTheme="@style/AppTheme.PopupOverlay" />
 
 
-    <ListView
-        android:id="@+id/type_item_list"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/type_item_swipfreshlayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:dividerHeight="0dp"
-        android:divider="#00000000"
-        android:overScrollMode="never"
-        android:scrollbars="vertical" />
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/type_item_recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:overScrollMode="never"
+            android:scrollbars="vertical" />
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
 
 </LinearLayout>

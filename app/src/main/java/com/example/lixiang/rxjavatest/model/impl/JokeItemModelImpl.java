@@ -1,6 +1,6 @@
 package com.example.lixiang.rxjavatest.model.impl;
 
-import com.example.lixiang.rxjavatest.Api.JokeItemService;
+import com.example.lixiang.rxjavatest.api.JokeItemService;
 import com.example.lixiang.rxjavatest.data.JokeItemData;
 import com.example.lixiang.rxjavatest.model.IJokeItemModel;
 import com.example.lixiang.rxjavatest.net.NetManager;

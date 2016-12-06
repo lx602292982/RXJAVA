@@ -9,5 +9,5 @@ import com.example.lixiang.rxjavatest.data.JokeItemData;
 
 public interface JokeItemView extends IBaseView {
 
-    void onsuccess(JokeItemData data);
+    void onSuccess(JokeItemData data);
 }

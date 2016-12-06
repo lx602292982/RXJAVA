@@ -1,29 +1,50 @@
 package com.example.lixiang.rxjavatest.ui.activity;
 
+import android.net.Uri;
+import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.widget.ListView;
 
 import com.example.lixiang.rxjavatest.R;
 import com.example.lixiang.rxjavatest.data.JokeItemData;
 import com.example.lixiang.rxjavatest.presenter.JokeItemPresenter;
 import com.example.lixiang.rxjavatest.supprt.view.JokeItemView;
 import com.example.lixiang.rxjavatest.ui.adapter.JokeItemAdapter;
+import com.example.lixiang.rxjavatest.ui.adapter.baseadapter.OnItemClickListeners;
+import com.example.lixiang.rxjavatest.ui.adapter.baseadapter.OnLoadMoreListener;
+import com.example.lixiang.rxjavatest.ui.adapter.baseadapter.ViewHolder;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
+import com.google.android.gms.common.api.GoogleApiClient;
 
-public class MainActivity extends BaseMvpActivity<JokeItemView, JokeItemPresenter> implements JokeItemView, SwipeRefreshLayout.OnRefreshListener {
+import java.util.ArrayList;
+
+import butterknife.BindView;
+import butterknife.BindViews;
+
+public class MainActivity extends BaseMvpActivity<JokeItemView, JokeItemPresenter> implements JokeItemView, SwipeRefreshLayout.OnRefreshListener,OnLoadMoreListener
+        ,OnItemClickListeners<JokeItemData.ResultBean.DataBean>{
     private static final String TAG = "MainActivity";
+    @BindViews(R.id.toolbar)
     Toolbar mToolbar;
 
-    private int PAGE_COUNT = 1;
-    private String mSubtype;
-    private int mTempPageCount = 2;
+    @BindView(R.id.type_item_recyclerview)
+    RecyclerView mRecyclerView;
+
+    @BindView(R.id.type_item_swipfreshlayout)
+    SwipeRefreshLayout mSwipeRefreshLayout;
 
     private JokeItemAdapter mJokeItemAdapter;
 
-    private boolean isLoadMore;//是否是底部加载更多
+    private int PAGE_COUNT = 1;
 
-    ListView mListView;
+    private int mTempPageCount = 2;
+
+    private boolean isLoadMore;
 
 
     @Override
@@ -33,7 +54,7 @@ public class MainActivity extends BaseMvpActivity<JokeItemView, JokeItemPresente
 
     @Override
     protected void fetchData() {
-        mPresenter.getJokeItemData(1, 20, "ac2773a5c0635ecb23c1b2eaa6c2bf9f");
+        mPresenter.getJokeItemData(PAGE_COUNT);
     }
 
     @Override
@@ -43,33 +64,86 @@ public class MainActivity extends BaseMvpActivity<JokeItemView, JokeItemPresente
 
     @Override
     protected void initView() {
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        mListView = (ListView) findViewById(R.id.type_item_list);
-
         mToolbar.setTitle("笑话大全");
         setSupportActionBar(mToolbar);
+        mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent, R.color.colorPrimaryDark);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        //实现首次自动显示加载提示
+        mSwipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                mSwipeRefreshLayout.setRefreshing(true);
+            }
+        });
+
+        //上拉加载
+        mJokeItemAdapter = new JokeItemAdapter(this, new ArrayList<JokeItemData.ResultBean.DataBean>(), true);
+        mJokeItemAdapter.setLoadingView(R.layout.load_loading_layout);
+        mJokeItemAdapter.setOnLoadMoreListener(this);
+        mJokeItemAdapter.setOnItemClickListener(this);
+
+        final LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        mRecyclerView.setLayoutManager(layoutManager);
+
+        mRecyclerView.setAdapter(mJokeItemAdapter);
+
     }
 
     @Override
     protected void initData() {
-        mJokeItemAdapter = new JokeItemAdapter(getApplicationContext(), R.layout.joke_item_adapter);
-        mListView.setAdapter(mJokeItemAdapter);
+
     }
 
 
     @Override
-    public void onsuccess(JokeItemData data) {
-        mJokeItemAdapter.addAll(data.getResult().getData());
+    public void onSuccess(JokeItemData data) {
+        mJokeItemAdapter.setData(data.getResult().getData());
         Log.d(TAG, data.toString());
+
+        if (isLoadMore) {
+            if (data.getResult().getData().size() == 0) {
+                mJokeItemAdapter.setLoadEndView(R.layout.load_end_layout);
+            } else {
+                mJokeItemAdapter.setLoadMoreData(data.getResult().getData());
+                mTempPageCount++;
+            }
+        } else {
+            mJokeItemAdapter.setNewData(data.getResult().getData());
+            mSwipeRefreshLayout.setRefreshing(false);
+        }
     }
 
     @Override
     public void onError() {
         Log.d(TAG, "error");
+        if (isLoadMore) {
+            mJokeItemAdapter.setLoadFailedView(R.layout.load_failed_layout);
+        } else {
+            mSwipeRefreshLayout.setRefreshing(false);
+        }
     }
 
     @Override
     public void onRefresh() {
-//        mSwipeRefreshLayout.setRefreshing(false);
+        isLoadMore = false;
+        PAGE_COUNT = 1;
+        fetchData();
+    }
+
+
+    @Override
+    public void onLoadMore(boolean isReload) {
+        if (PAGE_COUNT == mTempPageCount && !isReload) {
+            return;
+        }
+        isLoadMore = true;
+        PAGE_COUNT = mTempPageCount;
+        fetchData();
+    }
+
+    @Override
+    public void onItemClick(ViewHolder viewHolder, JokeItemData.ResultBean.DataBean data, int position) {
+
     }
 }

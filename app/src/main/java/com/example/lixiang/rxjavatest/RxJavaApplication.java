@@ -3,6 +3,8 @@ package com.example.lixiang.rxjavatest;
 import android.app.Application;
 import android.content.Context;
 
+import com.example.lixiang.rxjavatest.supprt.utils.SPUtil;
+
 
 /**
  * Author: Othershe
@@ -18,6 +20,7 @@ public class RxJavaApplication extends Application {
         mContext = getApplicationContext();
 
         initRealm();
+        SPUtil.init(mContext, "RxJava");
     }
 
     public static Context getContext() {

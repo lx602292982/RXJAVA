@@ -1,4 +1,4 @@
-package com.example.lixiang.rxjavatest.Api;
+package com.example.lixiang.rxjavatest.api;
 
 import com.example.lixiang.rxjavatest.data.JokeItemData;
 
