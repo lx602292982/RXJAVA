@@ -1,7 +1,5 @@
 package com.example.lixiang.rxjavatest.ui.activity;
 
-import android.net.Uri;
-import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,32 +9,32 @@ import android.util.Log;
 import com.example.lixiang.rxjavatest.R;
 import com.example.lixiang.rxjavatest.data.JokeItemData;
 import com.example.lixiang.rxjavatest.presenter.JokeItemPresenter;
+import com.example.lixiang.rxjavatest.supprt.utils.CustomDialog;
 import com.example.lixiang.rxjavatest.supprt.view.JokeItemView;
 import com.example.lixiang.rxjavatest.ui.adapter.JokeItemAdapter;
 import com.example.lixiang.rxjavatest.ui.adapter.baseadapter.OnItemClickListeners;
 import com.example.lixiang.rxjavatest.ui.adapter.baseadapter.OnLoadMoreListener;
 import com.example.lixiang.rxjavatest.ui.adapter.baseadapter.ViewHolder;
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.appindexing.Thing;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.util.ArrayList;
 
-import butterknife.BindView;
-import butterknife.BindViews;
+import butterknife.InjectView;
+
 
 public class MainActivity extends BaseMvpActivity<JokeItemView, JokeItemPresenter> implements JokeItemView, SwipeRefreshLayout.OnRefreshListener,OnLoadMoreListener
         ,OnItemClickListeners<JokeItemData.ResultBean.DataBean>{
     private static final String TAG = "MainActivity";
-    @BindViews(R.id.toolbar)
+
+    @InjectView(R.id.toolbar)
     Toolbar mToolbar;
 
-    @BindView(R.id.type_item_recyclerview)
+    @InjectView(R.id.type_item_recyclerview)
     RecyclerView mRecyclerView;
 
-    @BindView(R.id.type_item_swipfreshlayout)
+    @InjectView(R.id.type_item_swipfreshlayout)
     SwipeRefreshLayout mSwipeRefreshLayout;
+
+    CustomDialog mvpDialog;
 
     private JokeItemAdapter mJokeItemAdapter;
 
@@ -66,6 +64,7 @@ public class MainActivity extends BaseMvpActivity<JokeItemView, JokeItemPresente
     protected void initView() {
         mToolbar.setTitle("笑话大全");
         setSupportActionBar(mToolbar);
+        mvpDialog = new CustomDialog(mContext);
         mSwipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary, R.color.colorAccent, R.color.colorPrimaryDark);
         mSwipeRefreshLayout.setOnRefreshListener(this);
         //实现首次自动显示加载提示
@@ -82,11 +81,12 @@ public class MainActivity extends BaseMvpActivity<JokeItemView, JokeItemPresente
         mJokeItemAdapter.setOnLoadMoreListener(this);
         mJokeItemAdapter.setOnItemClickListener(this);
 
-        final LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
+        final LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(layoutManager);
 
         mRecyclerView.setAdapter(mJokeItemAdapter);
+        mvpDialog.show();
 
     }
 
@@ -115,14 +115,25 @@ public class MainActivity extends BaseMvpActivity<JokeItemView, JokeItemPresente
     }
 
     @Override
-    public void onError() {
-        Log.d(TAG, "error");
+    public void onError(String error) {
+        Log.d(TAG, error);
         if (isLoadMore) {
             mJokeItemAdapter.setLoadFailedView(R.layout.load_failed_layout);
         } else {
             mSwipeRefreshLayout.setRefreshing(false);
         }
     }
+
+    @Override
+    public void hideLoading() {
+        mvpDialog.dismiss();
+    }
+
+    @Override
+    public void showLoading() {
+
+    }
+
 
     @Override
     public void onRefresh() {
@@ -146,4 +157,5 @@ public class MainActivity extends BaseMvpActivity<JokeItemView, JokeItemPresente
     public void onItemClick(ViewHolder viewHolder, JokeItemData.ResultBean.DataBean data, int position) {
 
     }
+
 }

@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.WindowManager;
 
 import butterknife.ButterKnife;
-import butterknife.Unbinder;
+//import butterknife.Unbinder;
 
 /**
  * Author: Othershe
@@ -18,7 +18,6 @@ import butterknife.Unbinder;
  */
 public abstract class BaseActivity extends AppCompatActivity {
     protected Context mContext;
-    protected Unbinder mUnbinder;
 
     protected abstract int initLayoutId();
 
@@ -33,7 +32,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         setContentView(initLayoutId());
 
         mContext = this;
-        mUnbinder = ButterKnife.bind(this);
+        ButterKnife.inject(this);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {//5.0 全透明状态栏
             View decorView = getWindow().getDecorView();
@@ -46,15 +45,15 @@ public abstract class BaseActivity extends AppCompatActivity {
             localLayoutParams.flags = (WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS | localLayoutParams.flags);
         }
 
+        initData();
 
         initView();
-        initData();
     }
 
 
     @Override
     protected void onDestroy() {
-        mUnbinder.unbind();
+        ButterKnife.reset(mContext);
         super.onDestroy();
     }
 }

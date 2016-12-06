@@ -22,15 +22,22 @@ public class JokeItemPresenter extends BasePresenter<JokeItemView> {
 
     public void getJokeItemData(int size) {
         mSubscription = RxManager.getInstance().doSubscribe(mModel.getJokeData(size, Config.PAGE_SIZE, Config.JUhE_KEY), new RxSubscriber<JokeItemData>(true) {
+            @Override
+            public void onStart() {
+                super.onStart();
+                mView.showLoading();
+            }
 
             @Override
             protected void _onNext(JokeItemData jokeItemData) {
+                mView.hideLoading();
                 mView.onSuccess(jokeItemData);
             }
 
             @Override
             protected void _onError() {
-
+                mView.hideLoading();
+                mView.onError("请求错误！");
             }
         });
     }

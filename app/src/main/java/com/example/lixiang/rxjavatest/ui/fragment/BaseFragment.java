@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import com.example.lixiang.rxjavatest.ui.activity.BaseActivity;
 
 import butterknife.ButterKnife;
-import butterknife.Unbinder;
 
 /**
  * Author: Othershe
@@ -21,7 +20,6 @@ import butterknife.Unbinder;
 public abstract class BaseFragment extends Fragment {
     protected BaseActivity mActivity;
     protected View mRootView;
-    protected Unbinder mUnbinder;
 
     protected abstract int initLayoutId();
 
@@ -46,14 +44,14 @@ public abstract class BaseFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         initLayoutId();
         mRootView = inflater.inflate(initLayoutId(), container, false);
-        mUnbinder = ButterKnife.bind(this, mRootView);
+        ButterKnife.inject(this, mRootView);
         initView();
         return mRootView;
     }
 
     @Override
     public void onDestroyView() {
-        mUnbinder.unbind();
+        ButterKnife.reset(mActivity);
         super.onDestroyView();
     }
 }
